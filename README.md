@@ -54,3 +54,55 @@ Palabras invariables con función estrictamente estructural. El esperanto no tie
     - **Regex (Art):** `\bla\b` (la / el / los / las).
 
     - **Regex (Prep):** `\b(en|kun|per|sub|sur)\b` (en, con, por medio de, debajo, sobre).
+
+## Casos de estudio
+
+Para validar la solidez del analizador sintáctico y documentar las pruebas requeridas con Autómatas de Pila o parsers LL1, se ha diseñado un corpus de 20 oraciones estructuradas. Este corpus incluye intencionalmente cadenas diseñadas para detonar ambigüedad y poner a prueba el manejo de la recursividad.
+
+### Cadenas Aceptadas (Sintaxis Válida)
+
+Estas oraciones están gramaticalmente correctas bajo el estándar SVO (Sujeto-Verbo-Objeto) y deberán generar un árbol de sintaxis exitoso.
+
+1. `La viro vidas la hundon.` (Sintaxis básica SVO).
+
+2. `La hundo kuras.`
+
+3. `La granda bela blua birdo flugas.` (Caso especial: Diseñada para detonar recursividad izquierda mediante adjetivos múltiples).
+
+4. `La knabo manĝas la bonan pomon.` (Uso de adjetivos en el objeto directo).
+
+5. `La viro vidas la hundon per la teleskopo.` (Caso especial: Diseñada para detonar ambigüedad estructural. ¿Quién tiene el telesocopio, el hombre o el perro?).
+
+6. `La kato kuras en la domo.` (Uso de frase preposicional).
+
+7. `La granda viro legas la libron.`
+
+8. `La blua birdo havas la pomon.`
+
+9. `La knabo legas la libron en la granda domo.`
+
+10. `La bela kato vidas la bluan birdon.`
+
+11. `La knabo manĝas la pomon kun la hundo.` (Caso especial: Ambigüedad de adjunción preposicional).
+
+12. `La malgranda hundo kuras sub la domo.`
+
+### Cadenas Rechazadas (Sintaxis Inválida)
+
+Estas oraciones contienen errores estructurales graves y el parser deberá rechazarlas, demostrando la robustez de las reglas libres de contexto implementadas.
+
+1. `Vidas la viro hundon la.` (Orden completamente fracturado).
+
+2. `La bela granda.` (Falta el sustantivo del sujeto).
+
+3. `Manĝas en la domo.` (Ausencia de sujeto explícito).
+
+4. `La viro la libro legas.` (Violación del orden SVO).
+
+5. `Per domo la kuras kato.` (Preposición y artículos mal ubicados).
+
+6. `La la hundo kuras.` (Duplicidad de tokens de artículo).
+
+7. `Viro bela la vidas.` (Artículo pospuesto).
+
+8. `Knabo manĝas la blua.` (Adjetivo sin sustantivo en el objeto directo).
