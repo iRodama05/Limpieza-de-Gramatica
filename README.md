@@ -106,3 +106,92 @@ Estas oraciones contienen errores estructurales graves y el parser deberá recha
 7. `Viro bela la vidas.` (Artículo pospuesto).
 
 8. `Knabo manĝas la blua.` (Adjetivo sin sustantivo en el objeto directo).
+
+<p align="center">
+$S → NP VP$
+
+<p align="center">
+$NP → Art N$
+
+<p align="center">
+$NP → Art AdjList N$
+
+<p align="center">
+$NP → NP PP$
+
+<p align="center">
+$AdjList → AdjList Adj$
+
+<p align="center">
+$AdjList → Adj$
+
+<p align="center">
+$VP → V$
+
+<p align="center">
+$VP → V NP$
+
+<p align="center">
+$VP → VP PP$
+
+<p align="center">
+$PP → Prep NP$
+</p>
+
+### Análisis de los Problemas Inyectados en la Gramática Base
+
+Esta gramática base presenta dos problemas fundamentales en la teoría de lenguajes formales que impiden que un analizador sintáctico (parser) descendente, como un LL(1), funcione correctamente:
+
+#### 1. Recursividad Izquierda:
+Una gramática es recursiva por la izquierda si existe una derivación $A →+ A\alpha$. Por ejemplo, si en un diccionaro buscaramos la palabra "universo" y la definición dice "Universo: El universo que contiene estrellas", como la definición contiene la propia palabra que se está buscando, nunca se termina de comprender qué significa. Igual en las reglas pasa algo similar en $AdjList → AdjList Adj$ donde básicamente decimos "Una lista de adjetivos es una lista de adjetivos a la que le agregas otro adjetivo".
+
+Los programas que analizan texto (los "parsers descendentes") son máquinas que leen estrictamente de izquierda a derecha. Si el programa intenta entender qué es un $AdjList$, lee la regla y dice:
+
+1. "Busco un $AdjList$".
+2. "Para encontrarlo, la regla dice que primero debo buscar un $AdjList$".
+3. "Busco un $AdjList$".
+4. "La regla dice que para encontrarlo, primero debo buscar un $AdjList$".
+
+El programa entra en un bucle infinito de buscar la definición de qué es un $AdjList$.
+
+#### 2. Ambigüedad Estructural:
+Una gramática es ambigua si puede generar más de un árbol de derivación (o árbol de sintaxis) válido para una misma cadena de entrada. En este modelo, la ambigüedad se introdujo mediante la frase preposicional ($PP$), la cual puede derivarse tanto desde un $NP$ como desde un $VP$.
+
+**Demostración Visual:**
+
+Para ilustrar la ambigüedad, utilizamos la oración de prueba número 5 de nuestro corpus:
+"La viro vidas la hundon per la teleskopo" (El hombre ve al perro con el telescopio).
+
+La gramática base permite dos interpretaciones válidas, generando dos árboles distintos:
+
+- **Árbol A: Adjunción al Verbo (VP):**
+  El hombre utiliza el telescopio como instrumento para ver al perro. La frase preposicional modifica al verbo.
+  
+                S
+              /   \
+            NP      VP
+           / |     /  \
+        Art  N   VP    PP
+       (La)(viro) / \   /  \
+                 V  NP Prep NP
+            (vidas) /| (per) / \
+                 Art N    Art   N
+                (la)(hundon)(la)(teleskopo)
+  
+- **Árbol B: Adjunción al Sustantivo (NP):**
+  Interpretación semántica: El hombre ve a un perro que tiene/posee un telescopio. La frase preposicional modifica al objeto directo.
+
+                S
+              /   \
+            NP      VP
+           / |     /  \
+        Art  N    V    NP
+       (La)(viro)(vidas)/ \
+                      NP    PP
+                     / |   /  \
+                   Art N Prep NP
+                 (la)(hundon)(per) / \
+                                Art   N
+                               (la)(teleskopo)
+
+Al existir dos árboles de derivación por la izquierda para la misma cadena de entrada, queda formalmente demostrado que la gramática base es ambigua.
