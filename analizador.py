@@ -38,7 +38,7 @@ def probar_oracion(oracion):
             print("La oración es sintácticamente correcta.")
             for arbol in arboles:
                 print(arbol) # Imprime el árbol en la consola
-                # arbol.draw() # <- Linea opcional que dibuja el arbol
+                arbol.draw()
         else:
             print("No se pudo construir un árbol (Sintaxis inválida).")
             
