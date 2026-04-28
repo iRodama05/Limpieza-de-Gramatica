@@ -195,3 +195,74 @@ La gramática base permite dos interpretaciones válidas, generando dos árboles
                                (la)(teleskopo)
 
 Al existir dos árboles de derivación por la izquierda para la misma cadena de entrada, queda formalmente demostrado que la gramática base es ambigua.
+
+## Limpieza de la Gramática
+
+### 1. Eliminación de la Ambigüedad
+
+Para resolver el problema de que una oración genere dos árboles distintos, es necesario eliminar las reglas redundantes. En la gramática base, el problema es que la frase preposicional ($PP$) puede derivarse tanto del sustantivo ($NP$) como del verbo ($VP$).
+
+### 2. Eliminación de Recursividad a la Izquierda
+
+El problema principal de la recursividad izquierda es que obliga al analizador sintáctico a evaluar una regla de forma infinita antes de poder leer la primera palabra de la oración. Para solucionarlo, es posible aplicar un proceso de transformación matemática que convierte esta recursividad de "izquierda" a "derecha".
+
+En lugar de definir una lista buscando primero la lista entera y luego su último elemento, la redefinimos buscando primero un elemento inicial, seguido de un nuevo símbolo auxiliar que se encargará de buscar si existen elementos adicionales siendo este el sufijo "prima.
+
+**A) Transformación de la Lista de Adjetivos ($AdjList$)**
+
+- **Regla original (sucia):** $AdjList \rightarrow AdjList \ Adj \mid Adj$
+- **Regla transformada (limpia):** Extraemos el elemento inicial (el primer adjetivo) y le agregamos el símbolo auxiliar ($AdjList'$).
+- $AdjList \rightarrow Adj \ AdjList'$
+- $AdjList' \rightarrow Adj \ AdjList' \mid \epsilon$
+
+**B) Transformación de la Frase Verbal ($VP$)**
+
+- **Regla original (sucia):** $VP \rightarrow VP \ PP \mid V \mid V \ NP$
+- **Regla transformada (limpia):** Extraemos las bases que inician la frase (un verbo solo, o un verbo con objeto) y les agregamos el símbolo auxiliar ($VP'$).
+- $VP \rightarrow V \ VP' \mid V \ NP \ VP'$
+- $VP' \rightarrow PP \ VP' \mid \epsilon$
+
+## Implementación: NLTK y Análisis Computacional
+
+Para la validación computacional de la gramática, se utilizó la biblioteca nltk (Natural Language Toolkit) de Python. Esta herramienta permite instanciar la Gramática Libre de Contexto limpia ($G_{limpia}$) y ejecutar un parser automático sobre el corpus de pruebas.
+
+### Configuración de la Gramática en NLTK
+
+La traducción de nuestras reglas matemáticas a código requiere definir explícitamente los terminales (el vocabulario validado previamente por nuestras expresiones regulares). NLTK utiliza un formato de cadena estricto para cargar las producciones.
+
+```py
+
+import nltk
+
+# Definición de la Gramática Limpia en formato NLTK
+grammar_string = """
+  S -> NP VP
+  NP -> Art N | Art AdjList N
+  AdjList -> Adj AdjListPrima
+  AdjListPrima -> Adj AdjListPrima | 
+  VP -> V VPPrima | V NP VPPrima
+  VPPrima -> PP VPPrima | 
+  PP -> Prep NP
+
+  Art -> 'la'
+  N -> 'viro' | 'hundon' | 'hundo' | 'birdo' | 'knabo' | 'pomon' | 'teleskopo' | 'kato' | 'domo' | 'viro' | 'libron'
+  Adj -> 'granda' | 'bela' | 'blua' | 'bonan' | 'malgranda' | 'bluan'
+  V -> 'vidas' | 'kuras' | 'flugas' | 'manĝas' | 'legas' | 'havas'
+  Prep -> 'per' | 'en' | 'kun' | 'sub'
+"""
+
+# Instanciación de la gramática
+esperanto_cfg = nltk.CFG.fromstring(grammar_string)
+
+# Instanciación del parser descendente
+parser = nltk.ChartParser(esperanto_cfg)
+
+```
+
+Para procesar una oración, el analizador léxico (Regex) primero tokeniza la cadena de entrada en una lista de palabras (ej. [`'la', 'viro', 'vidas', 'la', 'hundon']`), la cual es evaluada por el `parser.parse()`. Las cadenas del corpus marcadas como aceptadas generan uno o más árboles, mientras que las rechazadas levantan una excepción al no encontrar una derivación válida, cumpliendo así con las pruebas documentadas.
+
+### Documentación Formal: Análisis con Parser LL(1)
+
+Para fundamentar teóricamente el éxito de las pruebas en la implementación de software, demostramos el comportamiento del analizador mediante la lógica de un parser LL(1).
+
+Al haber eliminado la recursividad izquierda y factorizado la ambigüedad, se garantiza que por cada combinación de un símbolo no terminal (estado actual) y un símbolo terminal (token de entrada o lookahead), exista a lo sumo una única regla de producción aplicable.
