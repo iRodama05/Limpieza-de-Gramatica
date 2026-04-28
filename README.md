@@ -301,3 +301,10 @@ El impacto real de la transformación gramatical se refleja directamente en el t
 Si intentamos analizar la gramática original con programas básicos, el sistema entrará en un ciclo infinito debido a la recursividad. Para obligar a la computadora a procesar esta gramática "sucia" y resolver sus ambigüedades, tendríamos que usar algoritmos mucho más pesados (como CYK o Earley). El gran inconveniente es que estos métodos son lentos; su tiempo de ejecución crece de forma cúbica, lo que se representa formalmente como $O(n^3)$, dependiendo de cuántas palabras tenga la oración. En la práctica, esto exige demasiado esfuerzo a la computadora y se vuelve ineficiente al analizar textos largos.
 
 En cambio, al corregir las reglas matemáticas, nos aseguramos de poder usar un analizador eficiente (LL1) que lee la oración de izquierda a derecha en una sola pasada, sin tener que adivinar ni volver sobre sus propios pasos. Gracias a esto, el programa tarda exactamente lo mismo en procesar cada palabra de manera individual. El tiempo total de ejecución se vuelve directamente proporcional a la longitud de la oración, logrando una complejidad lineal de $O(n)$. Básicamente, la limpieza de la gramática nos permitió pasar de un sistema lento y costoso a uno sumamente rápido, ideal para implementarse en aplicaciones de software reales.
+
+---
+
+- Gledhill, C. (2000). The Grammar of Esperanto: A Corpus-Based Description.
+- Jurafsky, D., & Martin, J. H. (2008). Speech and Language Processing: An Introduction to Natural Language Processing, Computational Linguistics, and Speech Recognition (2nd ed.).
+- Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). Compilers: Principles, Techniques, and Tools (2nd ed.). Pearson.
+- Sipser, M. (2012). Introduction to the Theory of Computation (3rd ed.).
