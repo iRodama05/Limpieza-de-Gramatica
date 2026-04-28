@@ -266,3 +266,38 @@ Para procesar una oración, el analizador léxico (Regex) primero tokeniza la ca
 Para fundamentar teóricamente el éxito de las pruebas en la implementación de software, demostramos el comportamiento del analizador mediante la lógica de un parser LL(1).
 
 Al haber eliminado la recursividad izquierda y factorizado la ambigüedad, se garantiza que por cada combinación de un símbolo no terminal (estado actual) y un símbolo terminal (token de entrada o lookahead), exista a lo sumo una única regla de producción aplicable.
+
+### Tabla de Parseo LL(1) (Extracto Demostrativo)
+
+La siguiente tabla ilustra cómo el analizador toma decisiones deterministas sin necesidad de retroceso (backtracking), evaluando la variable tope de la pila contra el token de entrada actual.
+
+| No Terminal / Token | la (Art) | granda (Adj) | vidas (V) | per (Prep) | $ (Fin de cadena) |
+|:--------------------|:---------|:-------------|:----------|:-----------|:------------------|
+| S | $S \rightarrow NP \ VP$| - | - | - | - |
+| NP | $NP \rightarrow Art \ N$ o $Art \ AdjList \ N$ | - | - | - | - |
+| AdjList | - | $AdjList \rightarrow Adj \ AdjList'$ | - | - | - |
+| AdjList' | - | $AdjList' \rightarrow Adj \ AdjList'$ | $AdjList' \rightarrow \epsilon$ | - | - |
+| VP | - | - | $VP \rightarrow V \ VP'$ o $V \ NP \ VP'$ | - | - |
+| VP' | - | - | - | $VP' \rightarrow PP \ VP'$ | $VP' \rightarrow PP \ VP'$ | $VP' \rightarrow \epsilon$ |
+
+## Análisis Teórico y Complejidad
+
+### Jerarquía de Chomsky: Antes y Después de la Limpieza
+
+La jerarquía de Chomsky clasifica los lenguajes formales en cuatro niveles (Tipos 0 al 3) según las restricciones impuestas a sus reglas de producción.
+
+#### Antes de la limpieza ($G_{sucia}$):
+La gramática base con ambigüedad y recursividad izquierda pertenece al Tipo 2: Lenguajes Libres de Contexto (CFL). Las producciones tienen la forma estricta $A \rightarrow \gamma$, donde $A$ es un único símbolo no terminal y $\gamma$ es una cadena de terminales y/o no terminales. Su evaluación requiere la memoria de un Autómata de Pila (PDA).
+
+#### Después de la limpieza ($G_{limpia}$):
+Tras eliminar la ambigüedad y la recursividad izquierda, el nivel de la gramática en la jerarquía de Chomsky no cambia; sigue siendo de Tipo 2.
+
+Sin embargo, aunque pertenece a la misma categoría principal, la gramática limpia ahora forma parte de un subconjunto estricto y mucho más restrictivo dentro del Tipo 2: las Gramáticas LL(1) (o Lenguajes Libres de Contexto Deterministas). Las transformaciones matemáticas no alteraron el poder expresivo del lenguaje (sigue pudiendo modelar el esperanto), pero sí optimizaron su estructura topológica para garantizar el determinismo computacional.
+
+#### Implicaciones de la Complejidad Temporal
+
+El impacto real de la transformación gramatical se refleja directamente en el tiempo de ejecución de los algoritmos de parseo.
+
+Si intentamos analizar la gramática original con programas básicos, el sistema entrará en un ciclo infinito debido a la recursividad. Para obligar a la computadora a procesar esta gramática "sucia" y resolver sus ambigüedades, tendríamos que usar algoritmos mucho más pesados (como CYK o Earley). El gran inconveniente es que estos métodos son lentos; su tiempo de ejecución crece de forma cúbica, lo que se representa formalmente como $O(n^3)$, dependiendo de cuántas palabras tenga la oración. En la práctica, esto exige demasiado esfuerzo a la computadora y se vuelve ineficiente al analizar textos largos.
+
+En cambio, al corregir las reglas matemáticas, nos aseguramos de poder usar un analizador eficiente (LL1) que lee la oración de izquierda a derecha en una sola pasada, sin tener que adivinar ni volver sobre sus propios pasos. Gracias a esto, el programa tarda exactamente lo mismo en procesar cada palabra de manera individual. El tiempo total de ejecución se vuelve directamente proporcional a la longitud de la oración, logrando una complejidad lineal de $O(n)$. Básicamente, la limpieza de la gramática nos permitió pasar de un sistema lento y costoso a uno sumamente rápido, ideal para implementarse en aplicaciones de software reales.
